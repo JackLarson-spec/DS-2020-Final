@@ -1,0 +1,78 @@
+---
+title: "Chicago Public Schools - Education and Performance Analysis"
+author: "Team Members: Keenan Jacobs and Jack Larson"
+output: html_document
+---
+  
+  ## Research Topic: Education and Performance Analysis in Chicago Public Schools
+  
+  ### Team Members
+  - Keenan Jacobs
+- Jack Larson
+
+### Data Description
+The dataset we are analyzing is from the Chicago Public Schools for the 2023-2024 school year. It includes 650 schools and a total of 182 variables that capture various metrics such as SAT performance, attainment levels across grades, growth in specific subjects (Math and Reading), and other indicators related to school type, demographics, and resources.
+
+The goal of this project is to explore how these factors impact student performance and school outcomes, with a particular focus on:
+  - Growth in SAT Math and Reading scores
+- School attainment rates
+- The relationship between school types and student performance
+
+### First Data Cleaning Steps
+To prepare the data for analysis, we begin by loading the dataset, removing irrelevant or duplicated columns, and handling missing values. Below is the code for the initial data cleaning process:
+```{r}
+# Load necessary libraries
+library(tidyverse)
+library(knitr)
+
+# Load the dataset (replace with your actual file path)
+data <- read.csv("Chicago_Public_Schools_-_School_Progress_Reports_SY2324.csv")
+
+# View the structure of the dataset
+str(data)
+
+# Deal with missing values: Identify the proportion of missing data in each column
+missing_data <- data %>%
+  summarize_all(~mean(is.na(.)))
+
+cleaned_data <- data %>%
+  select(-c(School_ID, Address, City, State, Zip, Phone))
+
+head(cleaned_data)
+
+```
+### Marginal Summaries
+- School Type Distribution: Count the number of schools by type
+- Percentage of Schools with Attainment Above a Threshold: For example, the percentage of schools with attainment rates above 50%
+```{r}
+# 1. Count of schools by school type
+school_type_distribution <- cleaned_data %>%
+  count(School_Type)
+
+kable(school_type_distribution)
+
+# 2. Summary of attainment by school type
+attainment_summary_by_school_type <- cleaned_data %>%
+  group_by(School_Type) %>%
+  summarize(mean_attainment_all_grades = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+            median_attainment_all_grades = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+            sd_attainment_all_grades = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE))
+
+kable(attainment_summary_by_school_type)
+
+# 3. Percentage of schools with attainment above 50%
+percent_above_50_attainment <- cleaned_data %>%
+  filter(!is.na(Attainment_All_Grades_School_Pct)) %>%
+  summarize(percent_above_50 = mean(Attainment_All_Grades_School_Pct > 50) * 100)
+
+kable(percent_above_50_attainment)
+
+```
+### Questions to be Addressed
+In this project, we will investigate the following key questions related to educational performance in Chicago Public Schools:
+
+- How does school type (e.g., neighborhood vs. charter) affect student performance in SAT Math and Reading?
+- What are the key factors that contribute to higher SAT attainment rates across all grades?
+- Is there a significant relationship between school growth in SAT scores and other factors such as demographics or resource allocation?
+- Can we build a predictive model to forecast school growth based on available variables like previous performance and school category?
+
