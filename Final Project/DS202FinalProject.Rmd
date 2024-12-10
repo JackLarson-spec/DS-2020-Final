@@ -48,6 +48,7 @@ head(cleaned_data)
 # 1. Count of schools by school type
 school_type_distribution <- cleaned_data %>%
   count(School_Type)
+  
 
 kable(school_type_distribution)
 
@@ -95,6 +96,43 @@ attainment_summary <- cleaned_data %>%
 
 attainment_summary
 
+# Convert categorical columns to numeric
+cleaned_data <- cleaned_data %>%
+  mutate(
+    School_Survey_Involved_Families = case_when(
+      School_Survey_Involved_Families == "STRONG" ~ 3,
+      School_Survey_Involved_Families == "NEUTRAL" ~ 2,
+      School_Survey_Involved_Families == "WEAK" ~ 1
+    ),
+    School_Survey_Supportive_Environment = case_when(
+      School_Survey_Supportive_Environment == "STRONG" ~ 3,
+      School_Survey_Supportive_Environment == "NEUTRAL" ~ 2,
+      School_Survey_Supportive_Environment == "WEAK" ~ 1
+    ),
+    School_Survey_Ambitious_Instruction = case_when(
+      School_Survey_Ambitious_Instruction == "STRONG" ~ 3,
+      School_Survey_Ambitious_Instruction == "NEUTRAL" ~ 2,
+      School_Survey_Ambitious_Instruction == "WEAK" ~ 1
+    ),
+    School_Survey_Effective_Leaders = case_when(
+      School_Survey_Effective_Leaders == "STRONG" ~ 3,
+      School_Survey_Effective_Leaders == "NEUTRAL" ~ 2,
+      School_Survey_Effective_Leaders == "WEAK" ~ 1
+    )
+  )
 
+cleaned_data <- cleaned_data %>%
+  filter(School_Type != "" & !is.na(School_Type))
+
+ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Effective_Leaders, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Surveyed Effective Leaders in the Schools by School Type",
+    x = "School Type",
+    y = "Surveyed Effective Leaders"
+  ) +
+  theme(axis.text = element_text(size = 8), # Adjust text size for readability
+        axis.text.x = element_text(angle = 45, hjust = 1)) + # Rotate x-axis labels for clarity
+  scale_fill_brewer(palette = "Set3")
 
 ```
