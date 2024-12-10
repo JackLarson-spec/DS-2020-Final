@@ -4,17 +4,12 @@ author: "Team Members: Keenan Jacobs and Jack Larson"
 output: html_document
 ---
   
-  ## Research Topic: Education and Performance Analysis in Chicago Public Schools
-  
-  ### Team Members
-  - Keenan Jacobs
-- Jack Larson
-
 ### Data Description
+
 The dataset we are analyzing is from the Chicago Public Schools for the 2023-2024 school year. It includes 650 schools and a total of 182 variables that capture various metrics such as SAT performance, attainment levels across grades, growth in specific subjects (Math and Reading), and other indicators related to school type, demographics, and resources.
 
 The goal of this project is to explore how these factors impact student performance and school outcomes, with a particular focus on:
-  - Growth in SAT Math and Reading scores
+- Growth in SAT Math and Reading scores
 - School attainment rates
 - The relationship between school types and student performance
 
@@ -25,57 +20,394 @@ To prepare the data for analysis, we begin by loading the dataset, removing irre
 library(tidyverse)
 library(knitr)
 
-# Load the dataset (replace with your actual file path)
 data <- read.csv("Chicago_Public_Schools_-_School_Progress_Reports_SY2324.csv")
 
-# View the structure of the dataset
 str(data)
 
-# Deal with missing values: Identify the proportion of missing data in each column
 missing_data <- data %>%
   summarize_all(~mean(is.na(.)))
 
 cleaned_data <- data %>%
   select(-c(School_ID, Address, City, State, Zip, Phone))
 
-head(cleaned_data)
+head(cleaned_data[, 1:5], 5)
 
 ```
+
 ### Marginal Summaries
-- School Type Distribution: Count the number of schools by type
-- Percentage of Schools with Attainment Above a Threshold: For example, the percentage of schools with attainment rates above 50%
+
+Here we will look at a few of the peripherals regarding our dataset. Specifically, we will take a look at the number of schools and how much of our data has missing or no values
+
+#### School Type Distribution: Count the number of schools by type
+
+This code calculates the total number of schools for each school type in the dataset, providing a breakdown of the distribution by type.
+
 ```{r}
 # 1. Count of schools by school type
 school_type_distribution <- cleaned_data %>%
   count(School_Type)
-  
 
-kable(school_type_distribution)
-
-# 2. Summary of attainment by school type
-attainment_summary_by_school_type <- cleaned_data %>%
-  group_by(School_Type) %>%
-  summarize(mean_attainment_all_grades = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
-            median_attainment_all_grades = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
-            sd_attainment_all_grades = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE))
-
-kable(attainment_summary_by_school_type)
-
-# 3. Percentage of schools with attainment above 50%
-percent_above_50_attainment <- cleaned_data %>%
-  filter(!is.na(Attainment_All_Grades_School_Pct)) %>%
-  summarize(percent_above_50 = mean(Attainment_All_Grades_School_Pct > 50) * 100)
-
-kable(percent_above_50_attainment)
+# Print results as a markdown table
+print(knitr::kable(school_type_distribution, format = "markdown"))
 
 ```
-### Questions to be Addressed
-In this project, we will investigate the following key questions related to educational performance in Chicago Public Schools:
 
-- How does school type (e.g., neighborhood vs. charter) affect student performance in SAT Math and Reading?
-- What are the key factors that contribute to higher SAT attainment rates across all grades?
-- Is there a significant relationship between school growth in SAT scores and other factors such as demographics or resource allocation?
-- Can we build a predictive model to forecast school growth based on available variables like previous performance and school category?
+#### Count Entries with More Than 50% of Columns Filled with Valid Data
+
+This code calculates the total number of rows in the dataset, counts the entries where more than 50% of numeric columns have valid data (non-NA and non-zero), and computes the percentage of such valid entries relative to the total.
+
+```{r}
+# Count rows where more than 50% of numeric columns are filled with non-NA and non-zero data
+# Total number of entries in the dataset
+total_entries <- nrow(cleaned_data)
+
+# Count rows where more than 50% of numeric columns are filled with non-NA and non-zero data
+entries_with_valid_data <- cleaned_data %>%
+  select(where(is.numeric)) %>%  # Consider only numeric columns
+  rowwise() %>%
+  mutate(valid_data_fraction = mean(!is.na(c_across(everything())) & c_across(everything()) != 0)) %>%
+  filter(valid_data_fraction > 0.5) %>%
+  nrow()
+
+# Calculate the percentage of valid entries
+percentage_valid_data <- (entries_with_valid_data / total_entries) * 100
+
+# Display the results
+list(
+  Total_Entries = total_entries,
+  Valid_Entries = entries_with_valid_data,
+  Percentage_Valid_Entries = percentage_valid_data
+)
+
+
+```
+
+#### Count Number of Invalid Entries for Each Colum
+
+This code identifies columns in the dataset where all entries are either missing (NA) or zero and displays them in a table.
+
+```{r}
+# Count the number of invalid (NA, zero) entries for each column
+columns_with_no_data <- cleaned_data %>%
+  summarize_all(~ sum(is.na(.) | . == 0)) %>%
+  pivot_longer(cols = everything(), names_to = "Column", values_to = "Missing_or_Zero_Count") %>%
+  filter(Missing_or_Zero_Count == nrow(cleaned_data)) 
+
+# Print results as a markdown table
+print(knitr::kable(columns_with_no_data, format = "markdown", caption = "Columns with No Valid Data (All Entries NA or Zero)"))
+
+
+```
+
+
+#### Marginal Summaries Conclusion
+
+- The majority of schools in the dataset are neighborhood schools, highlighting their prevalence in the dataset.
+- Only a subset of entries (where more than 50% of numeric columns have valid data) are usable, indicating data completeness challenges.
+- Several columns in the dataset contain entirely invalid data (all entries are either NA or zero), suggesting these fields may be unsuitable for analysis.
+- The presence of incomplete data emphasizes the need for careful preprocessing to focus on reliable metrics for meaningful insights.
+
+---
+
+### Exploring the Data
+
+To gain a better understanding of the factors affecting student performance, we begin by exploring how school type influences SAT Math and Reading scores.
+
+### What is the Percentage of Schools with Attainment Above a Threshold: For example, the percentage of schools with attainment rates above 50%?
+
+This code filters out schools with missing or zero attainment rates to ensure accurate calculations. It then summarizes attainment statistics by school type (mean, median, standard deviation, and count) and calculates the percentage of schools with attainment rates above 50%.
+
+```{r}
+# Filter out schools with N/A or 0 for attainment rate
+valid_attainment_data <- cleaned_data %>%
+  filter(!is.na(Attainment_All_Grades_School_Pct) & Attainment_All_Grades_School_Pct > 0)
+
+# 2. Summary of attainment by school type
+attainment_summary_by_school_type <- valid_attainment_data %>%
+  group_by(School_Type) %>%
+  summarize(
+    mean_attainment_all_grades = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    median_attainment_all_grades = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    sd_attainment_all_grades = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    count = n()
+  )
+
+# Print summary table as markdown
+print(knitr::kable(attainment_summary_by_school_type, format = "markdown", caption = "Summary of Attainment by School Type"))
+
+# 3. Percentage of schools with attainment above 50%
+percent_above_50_attainment <- valid_attainment_data %>%
+  summarize(
+    percent_above_50 = mean(Attainment_All_Grades_School_Pct > 50) * 100
+  )
+
+# Print percentage table as markdown
+print(knitr::kable(percent_above_50_attainment, format = "markdown", caption = "Percentage of Schools with Attainment Above 50%"))
+
+
+```
+**Conclusion**
+- Selective enrollment schools exhibit the highest attainment rates among school types.
+- Only 8.97% of schools achieve attainment rates above 50%, highlighting challenges in district-wide academic performance.
+
+---
+#### How does school type (e.g., neighborhood vs. charter) affect student performance in SAT Math and Reading?
+
+This code filters schools with valid SAT scores and calculates summary statistics (mean, median, SD) by school type. It also generates a bar chart showing average SAT scores by school type.
+
+```{r}
+# Filter for schools with non-zero SAT scores
+valid_sat_scores <- cleaned_data %>%
+  filter(SAT_Grade_11_Score_School_Avg > 0)
+
+# Summarize SAT scores by school type
+sat_performance_by_school_type <- valid_sat_scores %>%
+  group_by(School_Type) %>%
+  summarize(
+    avg_sat_score = mean(SAT_Grade_11_Score_School_Avg, na.rm = TRUE),
+    median_sat_score = median(SAT_Grade_11_Score_School_Avg, na.rm = TRUE),
+    sd_sat_score = sd(SAT_Grade_11_Score_School_Avg, na.rm = TRUE),
+    count = n()
+  )
+
+# Print SAT performance table as markdown
+print(knitr::kable(sat_performance_by_school_type, format = "markdown", caption = "SAT Performance by School Type"))
+
+
+ggplot(sat_performance_by_school_type, aes(x = reorder(School_Type, -avg_sat_score), y = avg_sat_score, fill = School_Type)) +
+  geom_bar(stat = "identity", color = "black") +
+  geom_text(aes(label = round(avg_sat_score, 1)), vjust = -0.5, size = 3.5) +
+  labs(
+    title = "Average SAT Scores by School Type",
+    x = "School Type",
+    y = "Average SAT Score"
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  )
+
+
+```
+
+**Conclusion**
+- Selective enrollment schools have the highest SAT scores but exhibit high variability and a small sample size, making their data less reliable.
+- Magnet schools also show strong performance but face similar reliability concerns due to variability.
+- Charter and neighborhood schools have comparable and consistent scores, making their data the most reliable.
+- Citywide-option schools have the lowest SAT scores, reflecting potential challenges in academic performance.
+- The results align with school types' focus and demographics, with higher scores for academically selective schools and lower scores for more inclusive school types.
+
+---
+#### What are the key factors that contribute to higher SAT attainment rates across all grades?
+
+This code filters for reliable columns, averages year-specific metrics, and calculates correlations between these metrics and SAT scores.
+
+```{r}
+# Filter columns with reliable information
+reliable_columns <- c(
+  "Chronic_Truancy_Pct", "Mobility_Rate_Pct", "Attainment_All_Grades_School_Pct",
+  "Freshmen_On_Track_School_Pct_Year_1", "Freshmen_On_Track_School_Pct_Year_2",
+  "Graduation_4_Year_School_Pct_Year_1", "Graduation_4_Year_School_Pct_Year_2",
+  "Graduation_5_Year_School_Pct_Year_1", "Graduation_5_Year_School_Pct_Year_2",
+  "College_Enrollment_School_Pct_Year_1", "College_Enrollment_School_Pct_Year_2",
+  "College_Persistence_School_Pct_Year_1", "College_Persistence_School_Pct_Year_2",
+  "One_Year_Dropout_Rate_Year_1_Pct", "One_Year_Dropout_Rate_Year_2_Pct",
+  "Teacher_Attendance_Year_1_Pct", "Teacher_Attendance_Year_2_Pct",
+  "Student_Attendance_Year_1_Pct", "Student_Attendance_Year_2_Pct",
+  "SAT_Grade_11_Score_School_Avg"
+)
+
+# Select only relevant columns
+filtered_data <- cleaned_data %>%
+  select(all_of(reliable_columns)) %>%
+  filter(
+    !is.na(SAT_Grade_11_Score_School_Avg) & SAT_Grade_11_Score_School_Avg > 0
+  ) %>%
+  mutate(across(everything(), ~ ifelse(. == 0, NA, .))) %>%
+  drop_na()
+
+# Combine Year_1 and Year_2 columns into averages
+averaged_data <- filtered_data %>%
+  mutate(
+    Freshmen_On_Track_Avg = rowMeans(select(., starts_with("Freshmen_On_Track_School_Pct_")), na.rm = TRUE),
+    Graduation_4_Year_Avg = rowMeans(select(., starts_with("Graduation_4_Year_School_Pct_")), na.rm = TRUE),
+    Graduation_5_Year_Avg = rowMeans(select(., starts_with("Graduation_5_Year_School_Pct_")), na.rm = TRUE),
+    College_Enrollment_Avg = rowMeans(select(., starts_with("College_Enrollment_School_Pct_")), na.rm = TRUE),
+    College_Persistence_Avg = rowMeans(select(., starts_with("College_Persistence_School_Pct_")), na.rm = TRUE),
+    One_Year_Dropout_Avg = rowMeans(select(., starts_with("One_Year_Dropout_Rate_Year_")), na.rm = TRUE),
+    Teacher_Attendance_Avg = rowMeans(select(., starts_with("Teacher_Attendance_Year_")), na.rm = TRUE),
+    Student_Attendance_Avg = rowMeans(select(., starts_with("Student_Attendance_Year_")), na.rm = TRUE)
+  ) %>%
+  select(-matches("_Year_"))  # Remove individual year columns
+
+# Correlation analysis with SAT scores
+correlation_analysis <- averaged_data %>%
+  select(SAT_Grade_11_Score_School_Avg, everything()) %>%
+  cor(use = "complete.obs")
+
+# Display correlation matrix
+print(knitr::kable(correlation_analysis, format = "markdown", caption = "Correlation Matrix with SAT Scores"))
+
+```
+#### Correlation Matrix Results
+
+**Strong Positive Correlations**:
+
+- Attainment_All_Grades_School_Pct (0.97): Major driver of SAT scores.
+- College_Enrollment_Avg (0.82), College_Persistence_Avg (0.83), Student_Attendance_Avg (0.73): Schools with higher enrollment, persistence, and attendance rates tend to have better SAT performance.
+  
+**Strong Negative Correlations**:
+
+- Chronic_Truancy_Pct (-0.83): Truancy significantly disrupts SAT performance.
+- Mobility_Rate_Pct (-0.68): High mobility negatively impacts scores.
+```{r}
+# Check if SAT_Grade_11_Score_School_Avg exists after transformations
+if (!"SAT_Grade_11_Score_School_Avg" %in% colnames(averaged_data)) {
+  stop("SAT_Grade_11_Score_School_Avg column is missing.")
+}
+
+# Linear regression analysis
+sat_model <- lm(
+  SAT_Grade_11_Score_School_Avg ~ .,
+  data = averaged_data
+)
+
+# Summary of the regression model
+model_summary <- summary(sat_model)
+
+# Extract coefficients as a data frame
+coefficients_df <- as.data.frame(model_summary$coefficients)
+colnames(coefficients_df) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+
+# Print regression summary as markdown table
+print(knitr::kable(coefficients_df, format = "markdown", caption = "Linear Regression Model Coefficients"))
+
+```
+
+#### Linear Regression Model Results
+
+**Significant Predictors**:
+
+- Attainment_All_Grades_School_Pct (Estimate: 3.85, p < 0.001): Most critical factor for SAT performance.
+- College_Enrollment_Avg (Estimate: 1.00, p ≈ 0.05): Positive but smaller impact.
+  
+**Non-Significant Predictors**:
+
+- Chronic_Truancy_Pct, Mobility_Rate_Pct, Freshmen_On_Track_Avg, and others were not significant after controlling for other variables.
+  
+**Model Performance**
+
+- **R-squared (0.95)**: 95% of SAT score variance explained.
+- **Residual Standard Error (27.17)**: There is low unexplained variance.
+
+---
+#### How do perceptions of school climate and environment, as captured by survey ratings, relate to student outcomes such as SAT performance and attendance?
+
+This code encodes survey data, calculates correlations with SAT scores and attendance, and performs a regression analysis.
+
+```{r}
+# Columns of interest, excluding Student_Attendance_Avg if it doesn't exist
+survey_columns <- c(
+  "School_Survey_Involved_Families", "School_Survey_Supportive_Environment",
+  "School_Survey_Ambitious_Instruction", "School_Survey_Effective_Leaders",
+  "School_Survey_Collaborative_Teachers", "School_Survey_Safety"
+)
+
+# Ensure attendance column exists, replace with a fallback if needed
+attendance_column <- "Student_Attendance_Year_1_Pct"  # Replace with Year 2 if necessary
+
+# Define ordinal encoding for survey ratings
+survey_rating_map <- c(
+  "NOT ENOUGH DATA" = NA,
+  "VERY WEAK" = 1,
+  "WEAK" = 2,
+  "NEUTRAL" = 3,
+  "STRONG" = 4,
+  "VERY STRONG" = 5
+)
+
+# Encode survey columns as ordinal values and select relevant columns
+encoded_data <- cleaned_data %>%
+  mutate(across(all_of(survey_columns), ~ survey_rating_map[.])) %>%
+  filter(!is.na(SAT_Grade_11_Score_School_Avg) & SAT_Grade_11_Score_School_Avg > 0) %>%
+  select(SAT_Grade_11_Score_School_Avg, !!sym(attendance_column), all_of(survey_columns)) %>%
+  rename(Student_Attendance = !!sym(attendance_column))
+
+# Calculate correlation between survey ratings and other metrics
+correlation_results <- encoded_data %>%
+  cor(use = "complete.obs")
+
+# Print correlation matrix as markdown
+print(knitr::kable(correlation_results, format = "markdown", caption = "Correlation Matrix Between Survey Ratings and Metrics"))
+
+```
+#### Correlation Matrix Results
+
+**Strong Positive Correlations**:
+
+- Student_Attendance (0.553): The strongest relationship with SAT scores, indicating higher attendance is closely associated with better performance.
+
+**Moderate Positive Correlations**:
+
+- School_Survey_Involved_Families (0.338): Suggests that family involvement has a positive influence on SAT performance.
+- School_Survey_Supportive_Environment (0.370): Indicates that a supportive school environment contributes positively to SAT scores.
+
+**Weaker Correlations**:
+
+- Other survey metrics like School_Survey_Safety and School_Survey_Ambitious_Instruction have weaker correlations, suggesting less direct impact.
+```{r}
+# Linear regression to assess impact of survey ratings on SAT scores
+survey_model <- lm(
+  SAT_Grade_11_Score_School_Avg ~ School_Survey_Involved_Families +
+    School_Survey_Supportive_Environment + School_Survey_Ambitious_Instruction +
+    School_Survey_Effective_Leaders + School_Survey_Collaborative_Teachers +
+    School_Survey_Safety + Student_Attendance,
+  data = encoded_data
+)
+
+# Extract regression summary
+survey_model_summary <- summary(survey_model)
+
+# Convert coefficients to a data frame
+coefficients_df <- as.data.frame(survey_model_summary$coefficients)
+colnames(coefficients_df) <- c("Estimate", "Std. Error", "t value", "Pr(>|t|)")
+
+# Print regression coefficients as a markdown table
+print(knitr::kable(coefficients_df, format = "markdown", caption = "Survey Ratings Linear Regression Coefficients"))
+
+# Display R-squared and adjusted R-squared
+r_squared <- survey_model_summary$r.squared
+adj_r_squared <- survey_model_summary$adj.r.squared
+
+# Display model performance metrics as a markdown table
+performance_metrics <- data.frame(
+  Metric = c("R-squared", "Adjusted R-squared"),
+  Value = c(r_squared, adj_r_squared)
+)
+
+print(knitr::kable(performance_metrics, format = "markdown", caption = "Survey Ratings Regression Performance Metrics"))
+
+
+```
+#### Linear Regression Model Results
+
+**Significant Predictors**:
+
+- Student_Attendance (Estimate: 3.94, p < 0.001): The most impactful variable, where a 1% increase in attendance corresponds to a 3.94-point increase in SAT scores.
+- School_Survey_Involved_Families (Estimate: 29.72, p < 0.01): Strongly suggests that increased family involvement significantly boosts SAT performance.
+- School_Survey_Supportive_Environment (Estimate: 35.24, p < 0.05): Indicates that supportive environments have a substantial positive effect.
+- School_Survey_Collaborative_Teachers (Estimate: -26.65, p < 0.05): Surprisingly, this variable shows a significant negative relationship with SAT scores, potentially indicating multicollinearity or an indirect effect.
+  
+**Non-Significant Predictors**:
+
+- School_Survey_Ambitious_Instruction, School_Survey_Effective_Leaders, and School_Survey_Safety are not statistically significant.
+  
+**Model Performance**
+
+- **R-squared (0.448)**: The model explains 44.8% of the variation in SAT scores, indicating moderate explanatory power.
+- **Residual Standard Error (73.55)**: Suggests some unexplained variance in the data.
+- **F-statistic (12.99, p < 0.001)**: Confirms the model as a whole is statistically significant.
 
 ```{r}
 # Plot school type distribution
