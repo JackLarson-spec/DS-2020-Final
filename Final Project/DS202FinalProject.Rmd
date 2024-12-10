@@ -76,3 +76,25 @@ In this project, we will investigate the following key questions related to educ
 - Is there a significant relationship between school growth in SAT scores and other factors such as demographics or resource allocation?
 - Can we build a predictive model to forecast school growth based on available variables like previous performance and school category?
 
+```{r}
+# Plot school type distribution
+library(ggplot2)
+ggplot(cleaned_data, aes(x = School_Type)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Distribution of Schools by Type", x = "School Type", y = "Count") +
+  theme(axis.text = element_text(size = 3))
+
+# Descriptive statistics by school type
+attainment_summary <- cleaned_data %>%
+  group_by(School_Type) %>%
+  summarize(
+    Mean_Attainment = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    Median_Attainment = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    SD_Attainment = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE)
+  )
+
+attainment_summary
+
+
+
+```
