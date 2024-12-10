@@ -3,7 +3,7 @@ title: "Chicago Public Schools - Education and Performance Analysis"
 author: "Team Members: Keenan Jacobs and Jack Larson"
 output: html_document
 ---
-  
+
 ### Data Description
 
 The dataset we are analyzing is from the Chicago Public Schools for the 2023-2024 school year. It includes 650 schools and a total of 182 variables that capture various metrics such as SAT performance, attainment levels across grades, growth in specific subjects (Math and Reading), and other indicators related to school type, demographics, and resources.
@@ -151,6 +151,7 @@ print(knitr::kable(percent_above_50_attainment, format = "markdown", caption = "
 - Only 8.97% of schools achieve attainment rates above 50%, highlighting challenges in district-wide academic performance.
 
 ---
+
 #### How does school type (e.g., neighborhood vs. charter) affect student performance in SAT Math and Reading?
 
 This code filters schools with valid SAT scores and calculates summary statistics (mean, median, SD) by school type. It also generates a bar chart showing average SAT scores by school type.
@@ -199,6 +200,7 @@ ggplot(sat_performance_by_school_type, aes(x = reorder(School_Type, -avg_sat_sco
 - The results align with school types' focus and demographics, with higher scores for academically selective schools and lower scores for more inclusive school types.
 
 ---
+
 #### What are the key factors that contribute to higher SAT attainment rates across all grades?
 
 This code filters for reliable columns, averages year-specific metrics, and calculates correlations between these metrics and SAT scores.
@@ -302,6 +304,7 @@ print(knitr::kable(coefficients_df, format = "markdown", caption = "Linear Regre
 - **Residual Standard Error (27.17)**: There is low unexplained variance.
 
 ---
+
 #### How do perceptions of school climate and environment, as captured by survey ratings, relate to student outcomes such as SAT performance and attendance?
 
 This code encodes survey data, calculates correlations with SAT scores and attendance, and performs a regression analysis.
