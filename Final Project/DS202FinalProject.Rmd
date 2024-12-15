@@ -4,14 +4,25 @@ author: "Team Members: Keenan Jacobs and Jack Larson"
 output: html_document
 ---
 
-### Data Description
+### Intro
+The goal of our project is to explore the data set to better understand how various metrics affect schools in Chicago Public Schools. We looked at SAT performance, attainment levels across grades, growth in specific subjects (Math and Reading), and other indicators related to school type, demographics, and resources
 
-The dataset we are analyzing is from the Chicago Public Schools for the 2023-2024 school year. It includes 650 schools and a total of 182 variables that capture various metrics such as SAT performance, attainment levels across grades, growth in specific subjects (Math and Reading), and other indicators related to school type, demographics, and resources.
+What we are looking for:
 
-The goal of this project is to explore how these factors impact student performance and school outcomes, with a particular focus on:
-- Growth in SAT Math and Reading scores
-- School attainment rates
-- The relationship between school types and student performance
+1. What factors affect SAT performance, attainment levels, and growth?
+
+2. What percentage of schools have an attainment above a 50%?
+
+3. How does school type affect student performance in SAT Math and Reading?
+
+4. What are the key factors that contribute to higher SAT attainment rates across all grades?
+
+5. How do perceptions of school climate and environment, as captured by survey ratings, relate to student outcomes such as SAT performance and attendance?
+
+
+### Data
+The link to the data is https://data.cityofchicago.org/Education/Chicago-Public-Schools-School-Progress-Reports-SY2/2dn2-x66j/about_data. The website contains a CSV file that can be downloaded that has info about all public schools in Chicago from the year 2023-2024. It includes 650 schools/rows and a total of 182 variables. It includes various factors like - student growth rating, student attainment rating, SAT reading and math scores, school surveys, etc. 
+
 
 ### First Data Cleaning Steps
 To prepare the data for analysis, we begin by loading the dataset, removing irrelevant or duplicated columns, and handling missing values. Below is the code for the initial data cleaning process:
@@ -23,6 +34,7 @@ library(knitr)
 data <- read.csv("Chicago_Public_Schools_-_School_Progress_Reports_SY2324.csv")
 
 str(data)
+summary(data)
 
 missing_data <- data %>%
   summarize_all(~mean(is.na(.)))
@@ -33,6 +45,52 @@ cleaned_data <- data %>%
 head(cleaned_data[, 1:5], 5)
 
 ```
+
+# Dataset Description ---------------------------------------------------
+
+# General School Information
+ 
+# - School_ID: Unique identifier for each school
+# - Short_Name, Long_Name: Short and full names of the school
+# - School_Type: Type/category of school (e.g., Charter, Magnet, Neighborhood)
+# - Primary_Category: Main category the school falls under
+# - School_Latitude, School_Longitude: Geographic coordinates of the school
+
+# Academic Growth and Attainment Metrics
+
+# - Growth_Reading_Grades_Tested_Pct_ES: Percent growth in reading for tested grades (Elementary School)
+# - Growth_Reading_Grades_Tested_Label_ES: Label for reading growth performance
+# - Growth_Math_Grades_Tested_Pct_ES: Percent growth in math for tested grades
+# - Growth_Math_Grades_Tested_Label_ES: Label for math growth performance
+# - Attainment_Reading_Pct_ES, Attainment_Reading_Lbl_ES: Reading attainment percentage and label
+# - Attainment_Math_Pct_ES, Attainment_Math_Lbl_ES: Math attainment percentage and label
+# - NWEA_Reading_Growth_Grade_(3-8)_Pct, NWEA_Math_Growth_Grade_(3-8)_Pct: Growth percentages for NWEA tests (Grades 3-8)
+# - PSAT_Grade_9_Score_School_Avg, PSAT_Grade_10_Score_School_Avg: Average PSAT scores for Grades 9 and 10
+# - SAT_Grade_11_Score_School_Avg, SAT_Grade_11_Score_CPS_Avg: Average SAT scores for Grade 11 (school and CPS average)
+# - Growth_PSAT and Growth_SAT Metrics: Growth percentages for PSAT and SAT Reading and Math
+# - Attainment_PSAT and Attainment_SAT Metrics: Attainment percentages for PSAT and SAT Reading and Math
+
+# Graduation and College Outcomes
+
+# - Graduation_4_Year_School_Pct_Year_X: 4-year graduation rate for school
+# - Graduation_5_Year_School_Pct_Year_X: 5-year graduation rate for school
+# - College_Enrollment_School_Pct_Year_X: Percentage of students enrolled in college
+# - College_Persistence_School_Pct_Year_X: Percentage of students persisting in college
+
+# School Culture and Climate
+# - Culture_Climate_Rating: Overall rating of school culture and climate
+# - Culture_Climate_Description: Descriptive summary of school climate
+# - School_Survey_Involved_Families: Survey results for family involvement
+# - School_Survey_Supportive_Environment: Survey results for supportive environment
+# - School_Survey_Ambitious_Instruction: Survey results for ambitious instruction
+# - School_Survey_Effective_Leaders: Survey results for effective leadership
+# - School_Survey_Collaborative_Teachers: Results for teacher collaboration
+# - School_Survey_Parent_Teacher_Partnership: Partnership between parents and teachers
+# - School_Survey_Quality_Of_Facilities: Perception of school facilities
+
+# Attendance and Truancy
+# - Chronic_Truancy_Pct: Percentage of chronically truant students
+--------------------------------------------------------------------------
 
 ### Marginal Summaries
 
@@ -198,6 +256,149 @@ ggplot(sat_performance_by_school_type, aes(x = reorder(School_Type, -avg_sat_sco
 - Charter and neighborhood schools have comparable and consistent scores, making their data the most reliable.
 - Citywide-option schools have the lowest SAT scores, reflecting potential challenges in academic performance.
 - The results align with school types' focus and demographics, with higher scores for academically selective schools and lower scores for more inclusive school types.
+
+---
+
+### What is the distribution of schools by type, and how do their surveyes ratings vary across these types? Additionally, what are the descriptive statistics for student attainment percentages across school types?
+
+- The bar plot created shows the number of schools categorized by School_Type
+- The summary table provides statistics for the Attainment_All_Grades_School_Pct, including mean, median, and standard deviation for each School_Type.
+- The box plot visualizes the ratings for "Effective Leaders" across different school types. The numeric values (1–5) represent survey responses, with 5 being "VERY STRONG" and 1 being "VERY WEAK."
+
+```{r}
+# Plot school type distribution
+library(ggplot2)
+ggplot(cleaned_data, aes(x = School_Type)) +
+  geom_bar(fill = "steelblue") +
+  labs(title = "Distribution of Schools by Type", x = "School Type", y = "Count") +
+  theme(axis.text = element_text(size = 3))
+
+# Descriptive statistics by school type
+attainment_summary <- cleaned_data %>%
+  group_by(School_Type) %>%
+  summarize(
+    Mean_Attainment = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    Median_Attainment = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
+    SD_Attainment = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE)
+  )
+
+attainment_summary
+
+# Convert categorical columns to numeric
+cleaned_data <- cleaned_data %>%
+  mutate(
+    School_Survey_Involved_Families = case_when(
+      School_Survey_Involved_Families == "VERY STRONG" ~ 5,
+      School_Survey_Involved_Families == "STRONG" ~ 4,
+      School_Survey_Involved_Families == "NEUTRAL" ~ 3,
+      School_Survey_Involved_Families == "WEAK" ~ 2,
+      School_Survey_Involved_Families == "VERY WEAK" ~ 1
+    ),
+    School_Survey_Supportive_Environment = case_when(
+      School_Survey_Supportive_Environment == "VERY STRONG" ~ 5,
+      School_Survey_Supportive_Environment == "STRONG" ~ 4,
+      School_Survey_Supportive_Environment == "NEUTRAL" ~ 3,
+      School_Survey_Supportive_Environment == "WEAK" ~ 2,
+      School_Survey_Supportive_Environment == "VERY WEAK" ~ 1
+    ),
+    School_Survey_Ambitious_Instruction = case_when(
+      School_Survey_Ambitious_Instruction == "VERY STRONG" ~ 5,
+      School_Survey_Ambitious_Instruction == "STRONG" ~ 4,
+      School_Survey_Ambitious_Instruction == "NEUTRAL" ~ 3,
+      School_Survey_Ambitious_Instruction == "WEAK" ~ 2,
+      School_Survey_Ambitious_Instruction == "VERY WEAK" ~ 1
+    ),
+    School_Survey_Effective_Leaders = case_when(
+      School_Survey_Effective_Leaders == "VERY STRONG" ~ 5,
+      School_Survey_Effective_Leaders == "STRONG" ~ 4,
+      School_Survey_Effective_Leaders == "NEUTRAL" ~ 3,
+      School_Survey_Effective_Leaders == "WEAK" ~ 2,
+      School_Survey_Effective_Leaders == "VERY WEAK" ~ 1
+    )
+  )
+
+cleaned_data <- cleaned_data %>%
+  filter(School_Type != "" & !is.na(School_Type))
+
+# Box plots biased on Survey results by School Type 
+
+# School_Survey_Involved_Families
+ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Involved_Families, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Surveyed Involved Families by School Type",
+    x = "School Type",
+    y = "Surveyed Involved Families"
+  ) +
+  theme(axis.text = element_text(size = 8), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set3")
+
+# School_Survey_Effective_Leader
+ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Effective_Leaders, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Surveyed Effective Leaders by School Type",
+    x = "School Type",
+    y = "Surveyed Effective Leaders"
+  ) +
+  theme(axis.text = element_text(size = 8), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set3")
+
+# School_Survey_Supportive_Environment
+ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Supportive_Environment, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Surveyed Supportive Environments by School Type",
+    x = "School Type",
+    y = "Surveyed Supportive Environments"
+  ) +
+  theme(axis.text = element_text(size = 8), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set3")
+
+# School_Survey_Ambitious_Instruction
+ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Ambitious_Instruction, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Surveyed Ambitious Instruction by School Type",
+    x = "School Type",
+    y = "Surveyed Ambitious Instruction"
+  ) +
+  theme(axis.text = element_text(size = 8), 
+        axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set3")
+
+ong_data <- cleaned_data %>%
+  pivot_longer(
+    cols = c(School_Survey_Involved_Families, 
+             School_Survey_Effective_Leaders, 
+             School_Survey_Supportive_Environment, 
+             School_Survey_Ambitious_Instruction),
+    names_to = "Survey_Metric",
+    values_to = "Score"
+  )
+
+# Create the combined box plot for side by side comparison
+ggplot(long_data, aes(x = Survey_Metric, y = Score, fill = School_Type)) +
+  geom_boxplot() +
+  labs(
+    title = "Survey Metrics by School Type",
+    x = "Survey Metric",
+    y = "Score"
+  ) +
+  theme(
+    axis.text = element_text(size = 8),
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  ) +
+  scale_fill_brewer(palette = "Set3")
+```
+
+**Conclusion**
+-Classical, Charter, and Magnet Schools tend to perform better across all survey metrics, showing higher medians and tighter variability.
+-Neighborhood Schools tend to have greater variability and lower scores, especially in Effective Leaders and Involved Families surveys.
+-Career Academy Schools show more mixed results, particularly in Involved Families and Ambitious Instruction surveys, where scores extend to the lower range.
 
 ---
 
@@ -411,63 +612,3 @@ print(knitr::kable(performance_metrics, format = "markdown", caption = "Survey R
 - **R-squared (0.448)**: The model explains 44.8% of the variation in SAT scores, indicating moderate explanatory power.
 - **Residual Standard Error (73.55)**: Suggests some unexplained variance in the data.
 - **F-statistic (12.99, p < 0.001)**: Confirms the model as a whole is statistically significant.
-
-```{r}
-# Plot school type distribution
-library(ggplot2)
-ggplot(cleaned_data, aes(x = School_Type)) +
-  geom_bar(fill = "steelblue") +
-  labs(title = "Distribution of Schools by Type", x = "School Type", y = "Count") +
-  theme(axis.text = element_text(size = 3))
-
-# Descriptive statistics by school type
-attainment_summary <- cleaned_data %>%
-  group_by(School_Type) %>%
-  summarize(
-    Mean_Attainment = mean(Attainment_All_Grades_School_Pct, na.rm = TRUE),
-    Median_Attainment = median(Attainment_All_Grades_School_Pct, na.rm = TRUE),
-    SD_Attainment = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE)
-  )
-
-attainment_summary
-
-# Convert categorical columns to numeric
-cleaned_data <- cleaned_data %>%
-  mutate(
-    School_Survey_Involved_Families = case_when(
-      School_Survey_Involved_Families == "STRONG" ~ 3,
-      School_Survey_Involved_Families == "NEUTRAL" ~ 2,
-      School_Survey_Involved_Families == "WEAK" ~ 1
-    ),
-    School_Survey_Supportive_Environment = case_when(
-      School_Survey_Supportive_Environment == "STRONG" ~ 3,
-      School_Survey_Supportive_Environment == "NEUTRAL" ~ 2,
-      School_Survey_Supportive_Environment == "WEAK" ~ 1
-    ),
-    School_Survey_Ambitious_Instruction = case_when(
-      School_Survey_Ambitious_Instruction == "STRONG" ~ 3,
-      School_Survey_Ambitious_Instruction == "NEUTRAL" ~ 2,
-      School_Survey_Ambitious_Instruction == "WEAK" ~ 1
-    ),
-    School_Survey_Effective_Leaders = case_when(
-      School_Survey_Effective_Leaders == "STRONG" ~ 3,
-      School_Survey_Effective_Leaders == "NEUTRAL" ~ 2,
-      School_Survey_Effective_Leaders == "WEAK" ~ 1
-    )
-  )
-
-cleaned_data <- cleaned_data %>%
-  filter(School_Type != "" & !is.na(School_Type))
-
-ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Effective_Leaders, fill = School_Type)) +
-  geom_boxplot() +
-  labs(
-    title = "Surveyed Effective Leaders in the Schools by School Type",
-    x = "School Type",
-    y = "Surveyed Effective Leaders"
-  ) +
-  theme(axis.text = element_text(size = 8), # Adjust text size for readability
-        axis.text.x = element_text(angle = 45, hjust = 1)) + # Rotate x-axis labels for clarity
-  scale_fill_brewer(palette = "Set3")
-
-```
