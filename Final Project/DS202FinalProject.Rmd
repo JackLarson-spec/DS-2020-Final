@@ -33,9 +33,6 @@ library(knitr)
 
 data <- read.csv("Chicago_Public_Schools_-_School_Progress_Reports_SY2324.csv")
 
-str(data)
-summary(data)
-
 missing_data <- data %>%
   summarize_all(~mean(is.na(.)))
 
@@ -46,50 +43,51 @@ head(cleaned_data[, 1:5], 5)
 
 ```
 
-# Dataset Description ---------------------------------------------------
+# Dataset Description
 
 # General School Information
  
-# - School_ID: Unique identifier for each school
-# - Short_Name, Long_Name: Short and full names of the school
-# - School_Type: Type/category of school (e.g., Charter, Magnet, Neighborhood)
-# - Primary_Category: Main category the school falls under
-# - School_Latitude, School_Longitude: Geographic coordinates of the school
+*School_ID: Unique identifier for each school
+*Short_Name, Long_Name: Short and full names of the school
+*School_Type: Type/category of school (e.g., Charter, Magnet, Neighborhood)
+*Primary_Category: Main category the school falls under
+*School_Latitude, School_Longitude: Geographic coordinates of the school
 
 # Academic Growth and Attainment Metrics
 
-# - Growth_Reading_Grades_Tested_Pct_ES: Percent growth in reading for tested grades (Elementary School)
-# - Growth_Reading_Grades_Tested_Label_ES: Label for reading growth performance
-# - Growth_Math_Grades_Tested_Pct_ES: Percent growth in math for tested grades
-# - Growth_Math_Grades_Tested_Label_ES: Label for math growth performance
-# - Attainment_Reading_Pct_ES, Attainment_Reading_Lbl_ES: Reading attainment percentage and label
-# - Attainment_Math_Pct_ES, Attainment_Math_Lbl_ES: Math attainment percentage and label
-# - NWEA_Reading_Growth_Grade_(3-8)_Pct, NWEA_Math_Growth_Grade_(3-8)_Pct: Growth percentages for NWEA tests (Grades 3-8)
-# - PSAT_Grade_9_Score_School_Avg, PSAT_Grade_10_Score_School_Avg: Average PSAT scores for Grades 9 and 10
-# - SAT_Grade_11_Score_School_Avg, SAT_Grade_11_Score_CPS_Avg: Average SAT scores for Grade 11 (school and CPS average)
-# - Growth_PSAT and Growth_SAT Metrics: Growth percentages for PSAT and SAT Reading and Math
-# - Attainment_PSAT and Attainment_SAT Metrics: Attainment percentages for PSAT and SAT Reading and Math
+*Growth_Reading_Grades_Tested_Pct_ES: Percent growth in reading for tested grades (Elementary School)
+*Growth_Reading_Grades_Tested_Label_ES: Label for reading growth performance
+*Growth_Math_Grades_Tested_Pct_ES: Percent growth in math for tested grades
+*Growth_Math_Grades_Tested_Label_ES: Label for math growth performance
+*Attainment_Reading_Pct_ES, Attainment_Reading_Lbl_ES: Reading attainment percentage and label
+*Attainment_Math_Pct_ES, Attainment_Math_Lbl_ES: Math attainment percentage and label
+*NWEA_Reading_Growth_Grade_(3-8)_Pct, NWEA_Math_Growth_Grade_(3-8)_Pct: Growth percentages for NWEA tests (Grades 3-8)
+*PSAT_Grade_9_Score_School_Avg, PSAT_Grade_10_Score_School_Avg: Average PSAT scores for Grades 9 and 10
+*SAT_Grade_11_Score_School_Avg, SAT_Grade_11_Score_CPS_Avg: Average SAT scores for Grade 11 (school and CPS average)
+*Growth_PSAT and Growth_SAT Metrics: Growth percentages for PSAT and SAT Reading and Math
+*Attainment_PSAT and Attainment_SAT Metrics: Attainment percentages for PSAT and SAT Reading and Math
 
 # Graduation and College Outcomes
 
-# - Graduation_4_Year_School_Pct_Year_X: 4-year graduation rate for school
-# - Graduation_5_Year_School_Pct_Year_X: 5-year graduation rate for school
-# - College_Enrollment_School_Pct_Year_X: Percentage of students enrolled in college
-# - College_Persistence_School_Pct_Year_X: Percentage of students persisting in college
+*Graduation_4_Year_School_Pct_Year_X: 4-year graduation rate for school
+*Graduation_5_Year_School_Pct_Year_X: 5-year graduation rate for school
+*College_Enrollment_School_Pct_Year_X: Percentage of students enrolled in college
+*College_Persistence_School_Pct_Year_X: Percentage of students persisting in college
 
 # School Culture and Climate
-# - Culture_Climate_Rating: Overall rating of school culture and climate
-# - Culture_Climate_Description: Descriptive summary of school climate
-# - School_Survey_Involved_Families: Survey results for family involvement
-# - School_Survey_Supportive_Environment: Survey results for supportive environment
-# - School_Survey_Ambitious_Instruction: Survey results for ambitious instruction
-# - School_Survey_Effective_Leaders: Survey results for effective leadership
-# - School_Survey_Collaborative_Teachers: Results for teacher collaboration
-# - School_Survey_Parent_Teacher_Partnership: Partnership between parents and teachers
-# - School_Survey_Quality_Of_Facilities: Perception of school facilities
 
-# Attendance and Truancy
-# - Chronic_Truancy_Pct: Percentage of chronically truant students
+*Culture_Climate_Rating: Overall rating of school culture and climate
+*Culture_Climate_Description: Descriptive summary of school climate
+*School_Survey_Involved_Families: Survey results for family involvement
+*School_Survey_Supportive_Environment: Survey results for supportive environment
+*School_Survey_Ambitious_Instruction: Survey results for ambitious instruction
+*School_Survey_Effective_Leaders: Survey results for effective leadership
+*School_Survey_Collaborative_Teachers: Results for teacher collaboration
+*School_Survey_Parent_Teacher_Partnership: Partnership between parents and teachers
+*School_Survey_Quality_Of_Facilities: Perception of school facilities
+
+*Attendance and Truancy
+*Chronic_Truancy_Pct: Percentage of chronically truant students
 --------------------------------------------------------------------------
 
 ### Marginal Summaries
@@ -370,7 +368,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Ambitious_Instructio
         axis.text.x = element_text(angle = 45, hjust = 1)) +
   scale_fill_brewer(palette = "Set3")
 
-ong_data <- cleaned_data %>%
+long_data <- cleaned_data %>%
   pivot_longer(
     cols = c(School_Survey_Involved_Families, 
              School_Survey_Effective_Leaders, 
