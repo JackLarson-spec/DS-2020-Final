@@ -466,7 +466,7 @@ ggplot(sat_performance_by_school_type, aes(x = reorder(School_Type, -avg_sat_sco
   )
 ```
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 **Conclusion** - Selective enrollment schools have the highest SAT
 scores but exhibit high variability and a small sample size, making
@@ -501,7 +501,7 @@ ggplot(cleaned_data, aes(x = School_Type)) +
   theme(axis.text = element_text(size = 3))
 ```
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
 ``` r
 # Descriptive statistics by school type
@@ -592,7 +592,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Involved_Families, f
     ## Warning in RColorBrewer::brewer.pal(n, pal): n too large, allowed maximum for palette Set3 is 12
     ## Returning the palette you asked for with that many colors
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
 
 ``` r
 # School_Survey_Effective_Leader
@@ -613,7 +613,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Effective_Leaders, f
     ## n too large, allowed maximum for palette Set3 is 12
     ## Returning the palette you asked for with that many colors
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
 
 ``` r
 # School_Survey_Supportive_Environment
@@ -632,7 +632,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Supportive_Environme
     ## Warning: Removed 65 rows containing non-finite outside the scale range
     ## (`stat_boxplot()`).
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
 
 ``` r
 # School_Survey_Ambitious_Instruction
@@ -651,7 +651,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Ambitious_Instructio
     ## Warning: Removed 65 rows containing non-finite outside the scale range
     ## (`stat_boxplot()`).
 
-![](DS202FinalProject_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
 
 ``` r
 long_data <- cleaned_data %>%
