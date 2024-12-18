@@ -378,19 +378,7 @@ long_data <- cleaned_data %>%
     values_to = "Score"
   )
 
-# Create the combined box plot for side by side comparison
-ggplot(long_data, aes(x = Survey_Metric, y = Score, fill = School_Type)) +
-  geom_boxplot() +
-  labs(
-    title = "Survey Metrics by School Type",
-    x = "Survey Metric",
-    y = "Score"
-  ) +
-  theme(
-    axis.text = element_text(size = 8),
-    axis.text.x = element_text(angle = 45, hjust = 1)
-  ) +
-  scale_fill_brewer(palette = "Set3")
+
 ```
 
 **Conclusion**
@@ -548,12 +536,12 @@ print(knitr::kable(correlation_results, format = "markdown", caption = "Correlat
 
 **Strong Positive Correlations**:
 
-- Student_Attendance (0.553): The strongest relationship with SAT scores, indicating higher attendance is closely associated with better performance.
+- Student_Attendance (0.558): The strongest relationship with SAT scores, indicating higher attendance is closely associated with better performance.
 
 **Moderate Positive Correlations**:
 
-- School_Survey_Involved_Families (0.338): Suggests that family involvement has a positive influence on SAT performance.
-- School_Survey_Supportive_Environment (0.370): Indicates that a supportive school environment contributes positively to SAT scores.
+- School_Survey_Involved_Families (0.284): Suggests that family involvement has a positive influence on SAT performance.
+- School_Survey_Supportive_Environment (0.332): Indicates that a supportive school environment contributes positively to SAT scores.
 
 **Weaker Correlations**:
 
@@ -610,3 +598,29 @@ print(knitr::kable(performance_metrics, format = "markdown", caption = "Survey R
 - **R-squared (0.448)**: The model explains 44.8% of the variation in SAT scores, indicating moderate explanatory power.
 - **Residual Standard Error (73.55)**: Suggests some unexplained variance in the data.
 - **F-statistic (12.99, p < 0.001)**: Confirms the model as a whole is statistically significant.
+
+### Conclusion
+
+Our analysis of the *Chicago Public Schools - Education and Performance* dataset provided valuable insights into the factors affecting student performance, specifically focusing on SAT attainment, school type, demographics, and survey perceptions of school climate.
+
+#### Key Findings:
+
+1. **SAT Performance and Attainment**
+   - Selective enrollment and magnet schools consistently outperform other school types in SAT scores and attainment rates. However, these schools also exhibit higher variability.
+   - Only **`r percent_above_50_attainment$percent_above_50`%** of schools achieve attainment rates above 50%, highlighting systemic challenges in academic achievement across the district.
+
+2. **School Climate and Environment**
+   - Student attendance emerged as a **critical factor** in SAT performance, showing strong positive correlations and significant regression results.
+   - Survey metrics, particularly **"Involved Families"** and **"Supportive Environment,"** positively influence SAT scores, emphasizing the importance of family engagement and a nurturing school atmosphere.
+
+3. **Factors Impacting Performance**
+   - **Chronic truancy** and **mobility rates** negatively correlate with SAT scores, underscoring the disruption caused by absenteeism and school instability.
+   - College enrollment and persistence rates positively influence SAT scores, reflecting their alignment with strong academic environments.
+
+4. **Regression Models**
+   - **Attainment Across Grades** was the most significant predictor of SAT scores, explaining the majority of the variance (**R² = 0.95**).
+   - Student attendance and family involvement stood out as significant predictors in the survey-based model (**R² = 0.45**), reinforcing the need for targeted interventions in these areas.
+
+**Final Thoughts**:  Improving student performance in Chicago Public Schools requires a multi-faceted approach. Initiatives should focus on increasing family engagement, reducing truancy, fostering supportive environments, and addressing disparities in attainment across school types. While selective enrollment schools showcase the highest scores, improving outcomes for neighborhood and citywide-option schools remains critical for district-wide success.
+
+By prioritizing attendance, engagement, and targeted resource allocation, policymakers and educators can work toward meaningful improvements in student growth, attainment, and overall educational equity.
