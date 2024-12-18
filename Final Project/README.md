@@ -362,8 +362,7 @@ attainment_summary_by_school_type <- valid_attainment_data %>%
     sd_attainment_all_grades = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE),
     count = n()
   )
-
-# Print summary table as markdown
+#Print as markdown
 print(knitr::kable(attainment_summary_by_school_type, format = "markdown", caption = "Summary of Attainment by School Type"))
 ```
 
@@ -382,6 +381,24 @@ print(knitr::kable(attainment_summary_by_school_type, format = "markdown", capti
     ## |Neighborhood         |                  17.758139|                        10.40|                16.766523|    43|
     ## |Selective enrollment |                  74.845455|                        83.80|                27.310268|    11|
     ## |Small                |                  13.492308|                        11.60|                12.791499|    13|
+
+``` r
+# Plot the graph
+ggplot(attainment_summary_by_school_type, aes(x = School_Type, y = mean_attainment_all_grades)) +
+  geom_bar(stat = "identity", fill = "skyblue", color = "black") + # Bar plot
+  geom_errorbar(aes(ymin = mean_attainment_all_grades - sd_attainment_all_grades, 
+                    ymax = mean_attainment_all_grades + sd_attainment_all_grades), 
+                width = 0.2, color = "red") + # Error bars
+  geom_text(aes(label = round(mean_attainment_all_grades, 1)), 
+            vjust = -0.5, size = 3.5) + # Add labels to bars
+  labs(title = "Mean Attainment Across School Types", 
+       x = "School Type", 
+       y = "Mean Attainment (All Grades)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 ``` r
 # 3. Percentage of schools with attainment above 50%
@@ -513,26 +530,22 @@ attainment_summary <- cleaned_data %>%
     SD_Attainment = sd(Attainment_All_Grades_School_Pct, na.rm = TRUE)
   )
 
-attainment_summary
+# Plot the graph
+ggplot(attainment_summary, aes(x = School_Type, y = Mean_Attainment)) +
+  geom_bar(stat = "identity", fill = "lightblue", color = "black") + # Bar plot
+  geom_errorbar(aes(ymin = Mean_Attainment - SD_Attainment, 
+                    ymax = Mean_Attainment + SD_Attainment), 
+                width = 0.2, color = "darkblue") + # Error bars
+  geom_text(aes(label = round(Mean_Attainment, 1)), 
+            vjust = -0.5, size = 3.5) + # Add labels to bars
+  labs(title = "Mean Attainment Across School Types", 
+       x = "School Type", 
+       y = "Mean Attainment (%)") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-    ## # A tibble: 14 × 4
-    ##    School_Type              Mean_Attainment Median_Attainment SD_Attainment
-    ##    <chr>                              <dbl>             <dbl>         <dbl>
-    ##  1 ""                                  0                  0            0   
-    ##  2 "Career academy"                   10.6                5.4         12.5 
-    ##  3 "Charter"                           6.41               0            9.75
-    ##  4 "Citywide-Option"                   5.03               4            5.30
-    ##  5 "Classical"                         0                  0            0   
-    ##  6 "Contract"                         15.3                5.4         22.0 
-    ##  7 "Magnet"                            5.26               0           14.4 
-    ##  8 "Military academy"                 20.6               19.8          7.45
-    ##  9 "Neighborhood"                      1.92               0            7.77
-    ## 10 "Regional gifted center"            0                  0            0   
-    ## 11 "Selective enrollment"             74.8               83.8         27.3 
-    ## 12 "Small"                             7.02               1           11.4 
-    ## 13 "Special Education"                 0                  0            0   
-    ## 14 "Virtual"                           0                  0            0
+![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
 
 ``` r
 # Convert categorical columns to numeric
@@ -592,7 +605,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Involved_Families, f
     ## Warning in RColorBrewer::brewer.pal(n, pal): n too large, allowed maximum for palette Set3 is 12
     ## Returning the palette you asked for with that many colors
 
-![](README_files/figure-gfm/unnamed-chunk-7-2.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
 
 ``` r
 # School_Survey_Effective_Leader
@@ -613,7 +626,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Effective_Leaders, f
     ## n too large, allowed maximum for palette Set3 is 12
     ## Returning the palette you asked for with that many colors
 
-![](README_files/figure-gfm/unnamed-chunk-7-3.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
 
 ``` r
 # School_Survey_Supportive_Environment
@@ -632,7 +645,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Supportive_Environme
     ## Warning: Removed 65 rows containing non-finite outside the scale range
     ## (`stat_boxplot()`).
 
-![](README_files/figure-gfm/unnamed-chunk-7-4.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
 
 ``` r
 # School_Survey_Ambitious_Instruction
@@ -651,7 +664,7 @@ ggplot(cleaned_data, aes(x = School_Type, y = School_Survey_Ambitious_Instructio
     ## Warning: Removed 65 rows containing non-finite outside the scale range
     ## (`stat_boxplot()`).
 
-![](README_files/figure-gfm/unnamed-chunk-7-5.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-6.png)<!-- -->
 
 ``` r
 long_data <- cleaned_data %>%
@@ -723,27 +736,20 @@ correlation_analysis <- averaged_data %>%
   select(SAT_Grade_11_Score_School_Avg, everything()) %>%
   cor(use = "complete.obs")
 
-# Display correlation matrix
-print(knitr::kable(correlation_analysis, format = "markdown", caption = "Correlation Matrix with SAT Scores"))
+library(corrplot)
 ```
 
-    ## 
-    ## 
-    ## Table: Correlation Matrix with SAT Scores
-    ## 
-    ## |                                 | SAT_Grade_11_Score_School_Avg| Chronic_Truancy_Pct| Mobility_Rate_Pct| Attainment_All_Grades_School_Pct| Freshmen_On_Track_Avg| College_Enrollment_Avg| College_Persistence_Avg| Teacher_Attendance_Avg| Student_Attendance_Avg|
-    ## |:--------------------------------|-----------------------------:|-------------------:|-----------------:|--------------------------------:|---------------------:|----------------------:|-----------------------:|----------------------:|----------------------:|
-    ## |SAT_Grade_11_Score_School_Avg    |                     1.0000000|          -0.8251863|        -0.6762538|                        0.9678131|             0.3816782|              0.8240473|               0.8338680|              0.4065999|              0.7297435|
-    ## |Chronic_Truancy_Pct              |                    -0.8251863|           1.0000000|         0.7209631|                       -0.8304352|            -0.4677215|             -0.7183048|              -0.7722467|             -0.4226527|             -0.8843907|
-    ## |Mobility_Rate_Pct                |                    -0.6762538|           0.7209631|         1.0000000|                       -0.6625235|            -0.4187558|             -0.7658658|              -0.7379165|             -0.3904408|             -0.8222211|
-    ## |Attainment_All_Grades_School_Pct |                     0.9678131|          -0.8304352|        -0.6625235|                        1.0000000|             0.4330087|              0.7998663|               0.8284986|              0.4411290|              0.7293837|
-    ## |Freshmen_On_Track_Avg            |                     0.3816782|          -0.4677215|        -0.4187558|                        0.4330087|             1.0000000|              0.3114922|               0.3019467|              0.1981548|              0.3592448|
-    ## |College_Enrollment_Avg           |                     0.8240473|          -0.7183048|        -0.7658658|                        0.7998663|             0.3114922|              1.0000000|               0.8534537|              0.4580504|              0.6945859|
-    ## |College_Persistence_Avg          |                     0.8338680|          -0.7722467|        -0.7379165|                        0.8284986|             0.3019467|              0.8534537|               1.0000000|              0.3359135|              0.7811716|
-    ## |Teacher_Attendance_Avg           |                     0.4065999|          -0.4226527|        -0.3904408|                        0.4411290|             0.1981548|              0.4580504|               0.3359135|              1.0000000|              0.3887707|
-    ## |Student_Attendance_Avg           |                     0.7297435|          -0.8843907|        -0.8222211|                        0.7293837|             0.3592448|              0.6945859|               0.7811716|              0.3887707|              1.0000000|
+    ## Warning: package 'corrplot' was built under R version 4.4.2
 
-#### Correlation Matrix Results
+    ## corrplot 0.95 loaded
+
+``` r
+# Plot the heatmap
+corrplot(correlation_analysis, method = "color", col = colorRampPalette(c("blue", "white", "red"))(200),tl.col = "black", tl.cex = 0.5, addCoef.col = "black", number.cex = 0.8)
+```
+
+![](README_files/figure-gfm/unnamed-chunk-8-1.png)<!-- --> \####
+Correlation Matrix Results
 
 **Strong Positive Correlations**:
 
@@ -856,26 +862,12 @@ encoded_data <- cleaned_data %>%
 correlation_results <- encoded_data %>%
   cor(use = "complete.obs")
 
-# Print correlation matrix as markdown
-print(knitr::kable(correlation_results, format = "markdown", caption = "Correlation Matrix Between Survey Ratings and Metrics"))
+#Makes a heat map
+corrplot(correlation_results, method = "color", col = colorRampPalette(c("blue", "white", "red"))(200),tl.col = "black", tl.cex = 0.5, addCoef.col = "black", number.cex = 0.8)
 ```
 
-    ## 
-    ## 
-    ## Table: Correlation Matrix Between Survey Ratings and Metrics
-    ## 
-    ## |                                     | SAT_Grade_11_Score_School_Avg| Student_Attendance| School_Survey_Involved_Families| School_Survey_Supportive_Environment| School_Survey_Ambitious_Instruction| School_Survey_Effective_Leaders| School_Survey_Collaborative_Teachers| School_Survey_Safety|
-    ## |:------------------------------------|-----------------------------:|------------------:|-------------------------------:|------------------------------------:|-----------------------------------:|-------------------------------:|------------------------------------:|--------------------:|
-    ## |SAT_Grade_11_Score_School_Avg        |                     1.0000000|          0.5582087|                       0.2847109|                            0.3321684|                           0.0727857|                      -0.0490144|                           -0.0622639|            0.1301776|
-    ## |Student_Attendance                   |                     0.5582087|          1.0000000|                       0.2401815|                            0.1664660|                           0.0281581|                      -0.0039111|                            0.0610265|            0.0364785|
-    ## |School_Survey_Involved_Families      |                     0.2847109|          0.2401815|                       1.0000000|                            0.3978314|                           0.3580369|                       0.4313123|                            0.5472418|            0.2024793|
-    ## |School_Survey_Supportive_Environment |                     0.3321684|          0.1664660|                       0.3978314|                            1.0000000|                           0.4499607|                       0.3359760|                            0.2897742|            0.6216661|
-    ## |School_Survey_Ambitious_Instruction  |                     0.0727857|          0.0281581|                       0.3580369|                            0.4499607|                           1.0000000|                       0.3816484|                            0.3969205|            0.3492958|
-    ## |School_Survey_Effective_Leaders      |                    -0.0490144|         -0.0039111|                       0.4313123|                            0.3359760|                           0.3816484|                       1.0000000|                            0.7083040|            0.3470244|
-    ## |School_Survey_Collaborative_Teachers |                    -0.0622639|          0.0610265|                       0.5472418|                            0.2897742|                           0.3969205|                       0.7083040|                            1.0000000|            0.3112450|
-    ## |School_Survey_Safety                 |                     0.1301776|          0.0364785|                       0.2024793|                            0.6216661|                           0.3492958|                       0.3470244|                            0.3112450|            1.0000000|
-
-#### Correlation Matrix Results
+![](README_files/figure-gfm/unnamed-chunk-10-1.png)<!-- --> \####
+Correlation Matrix Results
 
 **Strong Positive Correlations**:
 
